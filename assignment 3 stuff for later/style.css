@@ -1,0 +1,71 @@
+/* Background gradient */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(120deg, #a8edea, #fed6e3);
+}
+
+/* Card container */
+.container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  width: 350px;
+}
+
+/* Title */
+.container h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #4b4efc;
+}
+
+/* Subtitle */
+.container p {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0.5rem 0 1rem;
+}
+
+/* Text area */
+textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 0.6rem;
+  outline: none;
+  resize: none;
+  margin-bottom: 1rem;
+}
+
+/* Button */
+button {
+  background: #4be4fc;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #34c0d1;
+}
+
+/* Result text */
+#result {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #333;
+}

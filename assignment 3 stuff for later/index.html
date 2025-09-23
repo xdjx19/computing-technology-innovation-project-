@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam & Malware Detection</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>spam and malware detection</h2>
+    <p>Enter your email text here to check if it is spam</p>
+    <textarea id="inputText" placeholder="Enter your text here"></textarea>
+    <button onclick="checkSpam()">check</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    function checkSpam() {
+      const text = document.getElementById("inputText").value;
+
+      if (!text.trim()) {
+        document.getElementById("result").innerText = "⚠️ Please enter some text.";
+        return;
+      }
+
+      // Dummy detection logic (replace with ML API call later)
+      if (text.toLowerCase().includes("free") || text.toLowerCase().includes("win")) {
+        document.getElementById("result").innerText = "🚨 This looks like spam!";
+      } else {
+        document.getElementById("result").innerText = "✅ This looks safe.";
+      }
+    }
+  </script>
+</body>
+</html>
