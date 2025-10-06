@@ -13,6 +13,20 @@ df = pd.read_csv("data/spam_dataset.csv")
 print("Dataset size:", df.shape)
 print(df.head())
 
+# === Simple class distribution bar graph ===
+sns.set(style="whitegrid")
+plt.figure(figsize=(5, 4))
+class_counts = df["spam"].value_counts().sort_index()  # ensure 0 (ham) then 1 (spam)
+sns.barplot(x=["Ham", "Spam"], y=class_counts.values, palette=["#4CAF50", "#F44336"])
+plt.title("Dataset Class Distribution")
+plt.xlabel("Message Type")
+plt.ylabel("Count")
+for i, v in enumerate(class_counts.values):
+    plt.text(i, v + (v * 0.01), str(v), ha='center', fontweight='bold')
+plt.tight_layout()
+plt.savefig("results/spam_class_distribution.png")
+plt.show()
+
 # Split features + labels
 X = df["text"]
 y = df["spam"]
@@ -45,7 +59,17 @@ with open("results/spam_report.txt", "w") as f:
 
 # Confusion matrix
 cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Ham", "Spam"], yticklabels=["Ham", "Spam"])
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    xticklabels=["Ham", "Spam"],
+    yticklabels=["Ham", "Spam"],
+)
 plt.title("Spam Detection Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.tight_layout()
 plt.savefig("results/spam_confusion_matrix.png")
 plt.show()
