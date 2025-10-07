@@ -9,27 +9,24 @@ import os
 
 # === Load both datasets ===
 # Original dataset
-df1 = pd.read_csv("data/spam_dataset.csv")
+df1 = pd.read_csv("data/spam_cleaned.csv")
 
-# Kaggle dataset (with encoding fallback)
+# Kaggle dataset
 try:
-    df2 = pd.read_csv("data/kaggle_spam.csv", encoding="utf-8")
+    df2 = pd.read_csv("data/kaggle_spam_cleaned.csv", encoding="utf-8")
 except UnicodeDecodeError:
-    df2 = pd.read_csv("data/kaggle_spam.csv", encoding="latin-1")
+    df2 = pd.read_csv("data/kaggle_spam_cleaned.csv", encoding="latin-1")
 
-# === Clean / standardize Kaggle dataset ===
-# Keep relevant columns and rename
-df2 = df2[["v1", "v2"]]
-df2.columns = ["label", "text"]
-df2["spam"] = df2["label"].map({"ham": 0, "spam": 1})
-df2 = df2.dropna(subset=["text"])
+# === Standardize Kaggle dataset column names ===
+df2 = df2.rename(columns={"label_num": "spam"})  # target column
+df2 = df2[["text", "spam"]].dropna(subset=["text"])
 
-# === Clean / standardize original dataset ===
+# === Standardize original dataset column names ===
 # (Assuming it already has "text" and "spam" columns)
 if "spam" not in df1.columns or "text" not in df1.columns:
     raise ValueError("Original dataset must have columns 'text' and 'spam'.")
 
-# === Combine both ===
+# === Combine both datasets ===
 df = pd.concat([df1[["text", "spam"]], df2[["text", "spam"]]], ignore_index=True)
 
 # === Check combined dataset ===
