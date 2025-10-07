@@ -5,20 +5,46 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import seaborn as sns
+import os
 
-# Load dataset
-df = pd.read_csv("data/spam_dataset.csv")
+# === Load both datasets ===
+# Original dataset
+df1 = pd.read_csv("data/spam_dataset.csv")
 
-# Basic info
-print("Dataset size:", df.shape)
+# Kaggle dataset (with encoding fallback)
+try:
+    df2 = pd.read_csv("data/kaggle_spam.csv", encoding="utf-8")
+except UnicodeDecodeError:
+    df2 = pd.read_csv("data/kaggle_spam.csv", encoding="latin-1")
+
+# === Clean / standardize Kaggle dataset ===
+# Keep relevant columns and rename
+df2 = df2[["v1", "v2"]]
+df2.columns = ["label", "text"]
+df2["spam"] = df2["label"].map({"ham": 0, "spam": 1})
+df2 = df2.dropna(subset=["text"])
+
+# === Clean / standardize original dataset ===
+# (Assuming it already has "text" and "spam" columns)
+if "spam" not in df1.columns or "text" not in df1.columns:
+    raise ValueError("Original dataset must have columns 'text' and 'spam'.")
+
+# === Combine both ===
+df = pd.concat([df1[["text", "spam"]], df2[["text", "spam"]]], ignore_index=True)
+
+# === Check combined dataset ===
+print("Combined dataset size:", df.shape)
 print(df.head())
+
+# Ensure results folder exists
+os.makedirs("results", exist_ok=True)
 
 # === Simple class distribution bar graph ===
 sns.set(style="whitegrid")
 plt.figure(figsize=(5, 4))
-class_counts = df["spam"].value_counts().sort_index()  # ensure 0 (ham) then 1 (spam)
+class_counts = df["spam"].value_counts().sort_index()
 sns.barplot(x=["Ham", "Spam"], y=class_counts.values, palette=["#4CAF50", "#F44336"])
-plt.title("Dataset Class Distribution")
+plt.title("Combined Dataset Class Distribution")
 plt.xlabel("Message Type")
 plt.ylabel("Count")
 for i, v in enumerate(class_counts.values):
@@ -27,28 +53,26 @@ plt.tight_layout()
 plt.savefig("results/spam_class_distribution.png")
 plt.show()
 
-# Split features + labels
+# === Train/test split ===
 X = df["text"]
 y = df["spam"]
-
-# Train/test split
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# TF-IDF vectorization
+# === TF-IDF Vectorization ===
 vectorizer = TfidfVectorizer(stop_words="english", max_features=3000)
 X_train_tfidf = vectorizer.fit_transform(X_train)
 X_test_tfidf = vectorizer.transform(X_test)
 
-# Model training
+# === Model training ===
 model = LogisticRegression(max_iter=200)
 model.fit(X_train_tfidf, y_train)
 
-# Predictions
+# === Predictions ===
 y_pred = model.predict(X_test_tfidf)
 
-# Evaluation
+# === Evaluation ===
 print("Accuracy:", accuracy_score(y_test, y_pred))
 report = classification_report(y_test, y_pred)
 print(report)
@@ -57,7 +81,7 @@ print(report)
 with open("results/spam_report.txt", "w") as f:
     f.write(report)
 
-# Confusion matrix
+# === Confusion matrix ===
 cm = confusion_matrix(y_test, y_pred)
 sns.heatmap(
     cm,
