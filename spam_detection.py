@@ -94,3 +94,11 @@ plt.ylabel("Actual")
 plt.tight_layout()
 plt.savefig("results/spam_confusion_matrix.png")
 plt.show()
+
+import pickle
+# Save both the model and vectorizer
+with open("backend/models/spam_model.pkl", "wb") as f:
+    pickle.dump(model, f)
+with open("backend/models/vectorizer.pkl", "wb") as f:
+    pickle.dump(vectorizer, f)
+print("Spam model and vectorizer saved!")
