@@ -1,4 +1,21 @@
 4Cyber – Spam and Malware Detection Project
+
+initally, you need to install the required dependencies. once its done, you don't have to do it again. follow these commands
+
+cd backend
+pip install -r requirements.txt
+
+too start backend enter these commands (terminal 1):
+cd backend
+uvicorn main:app --reload --port 8000
+
+to start frontend enter these commands (terminal 2):
+cd frontend
+npm run dev
+
+then go to this site in your browser
+http://localhost:3000
+
 Project Overview
 
 This project covers two cybersecurity tasks:

@@ -170,3 +170,32 @@ textarea {
   position: relative;
   height: 250px;
 }
+
+.chart-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 1rem;
+  text-align: center;
+  line-height: 1.4;
+  padding: 0 10px;
+}
+
+/* Force chart legend centering */
+.chartjs-legend {
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.chartjs-legend ul {
+  display: flex !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.chartjs-legend li {
+  display: inline-block !important;
+  margin: 0 10px !important;
+}

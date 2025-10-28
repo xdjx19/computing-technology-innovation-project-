@@ -26,7 +26,7 @@ ChartJS.register(
   Legend
 );
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://127.0.0.1:8000";
 
 function App() {
   const [activeTab, setActiveTab] = useState('malware');
@@ -51,6 +51,14 @@ function App() {
     setLoading(true);
     try {
       const features = malwareFeatures.split(',').map(num => parseFloat(num.trim()));
+      
+      // Ensure exactly 5 features
+      if (features.length !== 5) {
+        alert('Please enter exactly 5 numbers separated by commas');
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.post(`${API_BASE}/api/predict/malware`, {
         features: features
       });
@@ -120,18 +128,76 @@ function App() {
     labels: analysisHistory.map(h => h.label),
     datasets: [
       {
-        label: 'Confidence Score',
-        data: analysisHistory.map(h => h.confidence),
-        backgroundColor: analysisHistory.map(h => 
-          h.prediction.includes('malware') || h.prediction.includes('spam') ? '#dc3545' : '#28a745'
-        ),
-        borderColor: analysisHistory.map(h => 
-          h.prediction.includes('malware') || h.prediction.includes('spam') ? '#c82333' : '#1e7e34'
-        ),
+        label: 'Safe Content',
+        data: analysisHistory.map(h => h.prediction.includes('malware') || h.prediction.includes('spam') ? 0 : h.confidence),
+        backgroundColor: '#28a745',
+        borderColor: '#1e7e34',
         borderWidth: 1,
       },
+      {
+        label: 'Threat Detected',
+        data: analysisHistory.map(h => h.prediction.includes('malware') || h.prediction.includes('spam') ? h.confidence : 0),
+        backgroundColor: '#dc3545',
+        borderColor: '#c82333',
+        borderWidth: 1,
+      }
     ],
   };
+
+  const confidenceChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+      align: 'center',
+      labels: {
+        boxWidth: 15,
+        padding: 15,
+        color: '#333',
+        font: {
+          size: 12,
+          weight: 'bold'
+        },
+        generateLabels: function(chart) {
+          const original = ChartJS.defaults.plugins.legend.labels.generateLabels;
+          const labelsOriginal = original.call(this, chart);
+          
+          labelsOriginal.forEach(label => {
+            label.textAlign = 'center';
+          });
+          
+          return labelsOriginal;
+        }
+      }
+    }
+  },
+  layout: {
+    padding: {
+      top: 50,
+      bottom: 20,
+      left: 20,
+      right: 20
+    }
+  },
+  scales: {
+    y: { 
+      beginAtZero: true, 
+      max: 1.0,
+      title: {
+        display: true,
+        text: 'Confidence Level'
+      }
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'Analysis Number'
+      }
+    }
+  }
+};
 
   const threatChartData = {
     labels: ['Malware', 'Benign', 'Spam', 'Ham'],
@@ -149,41 +215,114 @@ function App() {
     ],
   };
 
-  const historyChartData = {
-    labels: ['Malware Analyses', 'Spam Analyses'],
+  const threatChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        align: 'center',
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          usePointStyle: true,
+        }
+      }
+    }
+  };
+
+  // Performance chart - more relevant for cybersecurity
+  const performanceChartData = {
+    labels: ['Threats Detected', 'Safe Content', 'Total Analyses'],
     datasets: [
       {
         data: [
-          analysisHistory.filter(h => h.type === 'malware').length,
-          analysisHistory.filter(h => h.type === 'spam').length,
+          threatStatistics.malware + threatStatistics.spam,
+          threatStatistics.benign + threatStatistics.ham,
+          analysisHistory.length
         ],
-        backgroundColor: ['#4b4efc', '#4be4fc'],
+        backgroundColor: ['#dc3545', '#28a745', '#6c757d'],
         borderWidth: 1,
       },
     ],
   };
 
-  const timelineChartData = {
-    labels: analysisHistory.slice(-10).map(h => 
-      h.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    ),
-    datasets: [
-      {
-        label: 'Risk Level',
-        data: analysisHistory.slice(-10).map(h => h.confidence),
-        borderColor: '#4b4efc',
-        backgroundColor: 'rgba(75, 78, 252, 0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
-
-  const chartOptions = {
+  const performanceChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        align: 'center',
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          usePointStyle: true,
+        }
+      }
+    }
   };
+
+// Timeline chart with analysis numbers
+const timelineChartData = {
+  labels: analysisHistory.slice(-10).map((h, index) => `Analysis ${analysisHistory.length - 9 + index}`),
+  datasets: [
+    {
+      label: 'Threat Confidence',
+      data: analysisHistory.slice(-10).map(h => 
+        h.prediction.includes('malware') || h.prediction.includes('spam') ? h.confidence : 0
+      ),
+      borderColor: '#dc3545',
+      backgroundColor: 'rgba(220, 53, 69, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+    },
+    {
+      label: 'Safe Confidence',
+      data: analysisHistory.slice(-10).map(h => 
+        !h.prediction.includes('malware') && !h.prediction.includes('spam') ? h.confidence : 0
+      ),
+      borderColor: '#28a745',
+      backgroundColor: 'rgba(40, 167, 69, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+    }
+  ],
+};
+
+const timelineChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top',
+      align: 'center',
+      labels: {
+        boxWidth: 12,
+        padding: 15,
+        usePointStyle: true,
+      }
+    }
+  },
+  scales: {
+    y: { 
+      beginAtZero: true, 
+      max: 1.0,
+      title: {
+        display: true,
+        text: 'Confidence Level'
+      }
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'Analysis Sequence'
+      }
+    }
+  }
+};
 
   return (
     <div className="main-container">
@@ -209,13 +348,13 @@ function App() {
       {activeTab === 'malware' && (
         <div className="tab-content">
           <div className="input-group">
-            <label htmlFor="malwareInput">Enter feature values (comma-separated):</label>
+            <label htmlFor="malwareInput">Enter exactly 5 feature values (comma-separated):</label>
             <input
               type="text"
               id="malwareInput"
               value={malwareFeatures}
               onChange={(e) => setMalwareFeatures(e.target.value)}
-              placeholder="For example: 0.1, 0.5, 0.3, 0.2, 0.8"
+              placeholder="Example: 0.1, 0.5, 0.3, 0.2, 0.8"
             />
           </div>
           <button 
@@ -265,30 +404,34 @@ function App() {
       {/* Charts Section */}
       <div className="charts-container">
         <div className="chart-box">
-          <div className="chart-title">Confidence Analysis</div>
+          <div className="chart-title">Detection Confidence Scores</div>
+          <div className="chart-description">Shows confidence level for each analysis. Green bars indicate safe content, red bars indicate threats.</div>
           <div className="chart-wrapper">
-            <Bar data={confidenceChartData} options={chartOptions} />
+            <Bar data={confidenceChartData} options={confidenceChartOptions} />
           </div>
         </div>
         
         <div className="chart-box">
           <div className="chart-title">Threat Distribution</div>
+          <div className="chart-description">Overall breakdown of detected content types across all analyses.</div>
           <div className="chart-wrapper">
-            <Pie data={threatChartData} options={chartOptions} />
+            <Pie data={threatChartData} options={threatChartOptions} />
           </div>
         </div>
         
         <div className="chart-box">
-          <div className="chart-title">Detection History</div>
+          <div className="chart-title">Detection Summary</div>
+          <div className="chart-description">Overview of threat detection performance and analysis statistics.</div>
           <div className="chart-wrapper">
-            <Doughnut data={historyChartData} options={chartOptions} />
+            <Doughnut data={performanceChartData} options={performanceChartOptions} />
           </div>
         </div>
         
         <div className="chart-box">
-          <div className="chart-title">Risk Level Timeline</div>
+          <div className="chart-title">Risk Trend Analysis</div>
+          <div className="chart-description">Shows how confidence levels change across recent analyses. Higher values indicate stronger threat detection.</div>
           <div className="chart-wrapper">
-            <Line data={timelineChartData} options={chartOptions} />
+            <Line data={timelineChartData} options={timelineChartOptions} />
           </div>
         </div>
       </div>
