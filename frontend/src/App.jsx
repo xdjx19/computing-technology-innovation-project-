@@ -35,12 +35,26 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [analysisHistory, setAnalysisHistory] = useState([]);
+  const [analysisCount, setAnalysisCount] = useState(0); // Track analysis count separately
   const [threatStatistics, setThreatStatistics] = useState({
     malware: 0,
     benign: 0,
     spam: 0,
     ham: 0
   });
+
+  // Reset function to clear everything
+  const resetAnalysis = () => {
+    setAnalysisHistory([]);
+    setAnalysisCount(0);
+    setThreatStatistics({
+      malware: 0,
+      benign: 0,
+      spam: 0,
+      ham: 0
+    });
+    setResult(null);
+  };
 
   const predictMalware = async () => {
     if (!malwareFeatures.trim()) {
@@ -63,13 +77,16 @@ function App() {
         features: features
       });
       
+      const newAnalysisCount = analysisCount + 1;
+      setAnalysisCount(newAnalysisCount);
+      
       setResult(response.data);
       updateThreatStatistics(response.data, 'malware');
       setAnalysisHistory(prev => [...prev, {
         ...response.data,
         timestamp: new Date(),
         type: 'malware',
-        label: `Analysis ${prev.length + 1}`
+        label: `Analysis ${newAnalysisCount}`
       }]);
     } catch (error) {
       alert('Error: ' + (error.response?.data?.detail || error.message));
@@ -89,13 +106,16 @@ function App() {
         text: spamText
       });
       
+      const newAnalysisCount = analysisCount + 1;
+      setAnalysisCount(newAnalysisCount);
+      
       setResult(response.data);
       updateThreatStatistics(response.data, 'spam');
       setAnalysisHistory(prev => [...prev, {
         ...response.data,
         timestamp: new Date(),
         type: 'spam',
-        label: `Analysis ${prev.length + 1}`
+        label: `Analysis ${newAnalysisCount}`
       }]);
     } catch (error) {
       alert('Error: ' + (error.response?.data?.detail || error.message));
@@ -145,59 +165,36 @@ function App() {
   };
 
   const confidenceChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      align: 'center',
-      labels: {
-        boxWidth: 15,
-        padding: 15,
-        color: '#333',
-        font: {
-          size: 12,
-          weight: 'bold'
-        },
-        generateLabels: function(chart) {
-          const original = ChartJS.defaults.plugins.legend.labels.generateLabels;
-          const labelsOriginal = original.call(this, chart);
-          
-          labelsOriginal.forEach(label => {
-            label.textAlign = 'center';
-          });
-          
-          return labelsOriginal;
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        align: 'center',
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          usePointStyle: true,
+        }
+      }
+    },
+    scales: {
+      y: { 
+        beginAtZero: true, 
+        max: 1.0,
+        title: {
+          display: true,
+          text: 'Confidence Level'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Analysis Number'
         }
       }
     }
-  },
-  layout: {
-    padding: {
-      top: 50,
-      bottom: 20,
-      left: 20,
-      right: 20
-    }
-  },
-  scales: {
-    y: { 
-      beginAtZero: true, 
-      max: 1.0,
-      title: {
-        display: true,
-        text: 'Confidence Level'
-      }
-    },
-    x: {
-      title: {
-        display: true,
-        text: 'Analysis Number'
-      }
-    }
-  }
-};
+  };
 
   const threatChartData = {
     labels: ['Malware', 'Benign', 'Spam', 'Ham'],
@@ -263,71 +260,89 @@ function App() {
     }
   };
 
-// Timeline chart with analysis numbers
-const timelineChartData = {
-  labels: analysisHistory.slice(-10).map((h, index) => `Analysis ${analysisHistory.length - 9 + index}`),
-  datasets: [
-    {
-      label: 'Threat Confidence',
-      data: analysisHistory.slice(-10).map(h => 
-        h.prediction.includes('malware') || h.prediction.includes('spam') ? h.confidence : 0
-      ),
-      borderColor: '#dc3545',
-      backgroundColor: 'rgba(220, 53, 69, 0.1)',
-      borderWidth: 3,
-      fill: true,
-      tension: 0.4,
-    },
-    {
-      label: 'Safe Confidence',
-      data: analysisHistory.slice(-10).map(h => 
-        !h.prediction.includes('malware') && !h.prediction.includes('spam') ? h.confidence : 0
-      ),
-      borderColor: '#28a745',
-      backgroundColor: 'rgba(40, 167, 69, 0.1)',
-      borderWidth: 3,
-      fill: true,
-      tension: 0.4,
-    }
-  ],
-};
+  // Timeline chart with analysis numbers - FIXED
+  const timelineChartData = {
+    labels: analysisHistory.slice(-10).map((h, index) => {
+      const startIndex = Math.max(analysisCount - 9, 1);
+      return `Analysis ${startIndex + index}`;
+    }),
+    datasets: [
+      {
+        label: 'Threat Confidence',
+        data: analysisHistory.slice(-10).map(h => 
+          h.prediction.includes('malware') || h.prediction.includes('spam') ? h.confidence : 0
+        ),
+        borderColor: '#dc3545',
+        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+      },
+      {
+        label: 'Safe Confidence',
+        data: analysisHistory.slice(-10).map(h => 
+          !h.prediction.includes('malware') && !h.prediction.includes('spam') ? h.confidence : 0
+        ),
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+      }
+    ],
+  };
 
-const timelineChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      align: 'center',
-      labels: {
-        boxWidth: 12,
-        padding: 15,
-        usePointStyle: true,
-      }
-    }
-  },
-  scales: {
-    y: { 
-      beginAtZero: true, 
-      max: 1.0,
-      title: {
-        display: true,
-        text: 'Confidence Level'
+  const timelineChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        align: 'center',
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          usePointStyle: true,
+        }
       }
     },
-    x: {
-      title: {
-        display: true,
-        text: 'Analysis Sequence'
+    scales: {
+      y: { 
+        beginAtZero: true, 
+        max: 1.0,
+        min: 0,
+        title: {
+          display: true,
+          text: 'Confidence Level'
+        },
+        ticks: {
+          stepSize: 0.2
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Analysis Sequence'
+        }
       }
     }
-  }
-};
+  };
 
   return (
     <div className="main-container">
       <h1>Cyber Security AI Dashboard</h1>
       <div className="subtitle">Advanced threat detection using machine learning</div>
+      
+      {/* Reset Button */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        <button 
+          className="analyse-button" 
+          onClick={resetAnalysis}
+          style={{ backgroundColor: '#6c757d', margin: '0 10px' }}
+        >
+          Reset Analysis
+        </button>
+      </div>
       
       <div className="tab-buttons">
         <button 
