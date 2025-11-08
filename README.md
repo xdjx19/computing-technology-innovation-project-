@@ -1,95 +1,145 @@
 4Cyber – Spam and Malware Detection Project
 
-initally, you need to install the required dependencies. once its done, you don't have to do it again. follow these commands
+A full-stack cybersecurity project integrating FastAPI (backend) and React (frontend) for detecting spam messages and malware files using trained machine-learning models.
+
+⚙️ Setup and Running the Application
+🔹 Step 1: Install Required Dependencies
+
+You only need to do this once — after installing, you don’t need to repeat it again.
 
 cd backend
 pip install -r requirements.txt
 
-too start backend enter these commands (terminal 1):
+🔹 Step 2: Start the Backend (Terminal 1)
 cd backend
 uvicorn main:app --reload --port 8000
 
-to start frontend enter these commands (terminal 2):
+
+This launches the FastAPI server on port 8000.
+
+🔹 Step 3: Start the Frontend (Terminal 2)
 cd frontend
 npm run dev
 
-then go to this site in your browser
-http://localhost:3000
 
-Project Overview
+This runs the React frontend on port 3000.
 
-This project covers two cybersecurity tasks:
+Then, open your browser and go to:
+👉 http://localhost:3000
 
-Spam Detection – Classifies messages as “Ham” (0) or “Spam” (1) using a combination of an original spam dataset and a Kaggle dataset.
+🧠 Project Overview
 
-Malware Detection – Classifies software files as “Benign” (0) or “Malware” (1) using a preprocessed malware dataset.
+This project performs two cybersecurity classification tasks:
 
-The target users are anyone who wants to automatically filter harmful messages or detect malware in files.
+Spam Detection – Classifies text messages as
+0 = Ham or 1 = Spam,
+using both an original spam dataset and a Kaggle dataset.
 
-Environment Setup
+Malware Detection – Classifies files as
+0 = Benign or 1 = Malware,
+using a preprocessed malware dataset.
 
-Python version: 3.10+
-Required libraries:
+Target Users:
+Anyone who wants to automatically filter harmful messages or detect malware in software files.
+
+🧩 Environment Setup
+
+Python Version: 3.10+
+
+If needed, install essential libraries manually:
 
 pip install pandas matplotlib scikit-learn seaborn
 
 
-Or using conda:
+Or using Conda:
 
 conda create -n ai4cyber python=3.10
 conda activate ai4cyber
 pip install pandas matplotlib scikit-learn seaborn
 
-Data Preparation
+📊 Data Preparation
 Spam Dataset
 
-Place the files in the data/ folder:
+Place the following files in the data/ folder:
 
 spam_cleaned.csv
 
 kaggle_spam_cleaned.csv
 
-The script will combine them automatically into a single dataset with two columns: text and spam.
+The script will automatically:
 
-Any missing messages are removed.
+Merge both files into a single dataset
 
-spam column: 0 = Ham, 1 = Spam
+Remove missing entries
+
+Keep two columns: text and spam (0 = Ham, 1 = Spam)
 
 Malware Dataset
 
-Place the file in data/malware_cleaned.csv.
+Place the file malware_cleaned.csv in the data/ folder.
 
-ID-like columns like hash are removed automatically.
+The script will automatically:
 
-The target column classification is converted to 0 = Benign, 1 = Malware.
+Drop ID-like columns (e.g., hashes)
 
-Running the Models
+Map the classification column to 0 = Benign, 1 = Malware
+
+🚀 Running the Models
 Spam Detection
 
-Run spam_detection.py.
+Run:
 
-The script will:
+python spam_detection.py
 
-Convert text to TF-IDF features (up to 3000 features, English stop words)
 
-Train a Logistic Regression model
+This script:
 
-Use an 80/20 train/test split
+Converts text to TF-IDF features (max 3000 features, English stop words)
+
+Trains a Logistic Regression model
+
+Splits data 80/20 for training and testing
 
 Malware Detection
 
-Run malware_detection.py.
+Run:
 
-The script will:
+python malware_detection.py
 
-Train a Random Forest Classifier with 100 trees
 
-Use an 80/20 train/test split
+This script:
 
-Outputs
+Trains a Random Forest Classifier (100 trees)
+
+Splits data 80/20 for training and testing
+
+📁 Folder Structure
+project/
+├─ backend/
+│  ├─ models/
+│  ├─ data/
+│  ├─ main.py
+│  └─ requirements.txt
+│
+├─ frontend/
+│  ├─ src/
+│  │  ├─ App.jsx
+│  │  ├─ index.css
+│  │  └─ main.jsx
+│  ├─ index.html
+│  ├─ package.json
+│  └─ vite.config.js
+│
+├─ models/
+├─ results/
+├─ malware_detection.py
+├─ spam_detection.py
+└─ README.md
+
+📈 Outputs
 Spam Detection
 
-results/spam_class_distribution.png – Bar chart showing number of Ham vs Spam
+results/spam_class_distribution.png – Ham vs Spam bar chart
 
 results/spam_report.txt – Classification report
 
@@ -97,56 +147,21 @@ results/spam_confusion_matrix.png – Confusion matrix
 
 Malware Detection
 
-results/class_distribution.png – Bar chart of Benign vs Malware
+results/class_distribution.png – Benign vs Malware bar chart
 
 results/malware_report.txt – Classification report
 
 results/malware_confusion_matrix.png – Confusion matrix
 
-results/feature_importance.png – Top 15 important features
+results/feature_importance.png – Top 15 most important features
 
-Folder Structure
-project/
-├─ data/
-│  ├─ spam_cleaned.csv
-│  ├─ kaggle_spam_cleaned.csv
-│  └─ malware_cleaned.csv
-├─ results/
-├─ spam_detection.py
-├─ malware_detection.py
-└─ Session5-Group5-Readme.pdf
-
-Making Predictions
-Spam
+🧪 Making Predictions
+Spam Example
 text_sample = ["Free entry! Win a prize now."]
 prediction = model.predict(vectorizer.transform(text_sample))
 print(prediction)  # 0 = Ham, 1 = Spam
 
-Malware
+Malware Example
 sample_df = pd.DataFrame([sample_features])
 prediction = rf.predict(sample_df)
 print(prediction)  # 0 = Benign, 1 = Malware
-
-Notes
-
-Spam detection may misclassify very unusual messages.
-
-Malware detection relies on features from the dataset, so results may vary with unknown malware types.
-
-Scripts assume the data/ folder exists and the results/ folder is writable.
-
-Submission Naming
-
-Readme: Session5-Group5-Readme.pdf
-
-Meeting minutes: Session5-Group5-MeetingMinutes.pdf
-
-Contribution form: Session5-Group5-ContributionForm.pdf
-
-Files to Include in Submission
-
-Datasets used (data/ folder)
-
-spam_detection.py and malware_detection.py
-
-Readme, meeting minutes, and contribution form PDFs
