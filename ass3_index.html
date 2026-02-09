@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Assignment 3C</title>
+
+    <link rel="stylesheet" href="ass3_style.css?v=3" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <h1>OECD Health: Expenditure vs Life Expectancy</h1>
+
+    <!-- Controls -->
+    <div class="controls">
+        <label>Year:</label>
+        <input id="yearSlider" type="range" />
+        <strong id="yearLabel"></strong>
+
+        <label style="margin-left:16px;">Top N:</label>
+        <select id="topN">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+            <option value="999">All</option>
+        </select>
+    </div>
+
+    <div class="card">
+        <h2>1) Efficiency Ranking (Bar)</h2>
+        <div id="bar"></div>
+    </div>
+
+    <div class="card">
+        <h2>2) Life Expectancy Over Time (Line)</h2>
+        <div class="row">
+            <div class="left">
+                <label>Select countries:</label><br />
+                <select id="countrySelect" multiple size="8"></select>
+                <p class="hint">Tip: hold Cmd (Mac) / Ctrl (Windows) to select multiple.</p>
+            </div>
+            <div class="right">
+                <div id="line"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>3) Expenditure vs Life Expectancy (Scatter)</h2>
+        <div id="scatter"></div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- IMPORTANT: cache-bust JS -->
+    <script src="ass3_script.js?v=3"></script>
+</body>
+
+</html>
